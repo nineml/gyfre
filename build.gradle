@@ -1,0 +1,111 @@
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+      url "https://dev.saxonica.com/maven"
+    }
+  }
+
+  configurations.all {
+    resolutionStrategy {
+      force 'xml-apis:xml-apis:1.4.01',
+        "${saxonGroup}:${saxonEdition}:${saxonVersion}",
+        "org.xmlresolver:xmlresolver:${xmlresolverVersion}"
+    }
+  }
+
+  dependencies {
+    classpath group: saxonGroup, name: saxonEdition, version: saxonVersion
+    classpath group: 'com.nwalsh', name: 'sinclude', version: sincludeVersion
+    classpath group: 'org.xmlresolver', name: 'xmlresolver', version: xmlresolverVersion
+  }
+}
+
+plugins {
+  id 'java'
+  id 'com.nwalsh.gradle.saxon.saxon-gradle' version '0.9.6'
+  id 'com.nwalsh.gradle.relaxng.validate' version '0.0.6'
+  id 'com.nwalsh.gradle.relaxng.translate' version '0.0.6'
+}
+
+import com.nwalsh.gradle.saxon.SaxonXsltTask
+import com.nwalsh.gradle.relaxng.validate.RelaxNGValidateTask
+import com.nwalsh.gradle.relaxng.translate.RelaxNGTranslateTask
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+  maven {
+    url "https://dev.saxonica.com/maven"
+  }
+}
+
+configurations.all {
+  resolutionStrategy {
+    force 'xml-apis:xml-apis:1.4.01',
+      "${saxonGroup}:${saxonEdition}:${saxonVersion}",
+      "org.xmlresolver:xmlresolver:${xmlresolverVersion}"
+  }
+}
+
+configurations {
+  xform.extendsFrom(implementation)
+}
+
+dependencies {
+  implementation (
+    [group: saxonGroup, name: saxonEdition, version: saxonVersion],
+    [group: 'org.relaxng', name: 'jing', version: jingVersion ],
+    [group: 'org.relaxng', name: 'trang', version: jingVersion ],
+    [group: 'org.xmlresolver', name: 'xmlresolver', version: xmlresolverVersion],
+    [group: 'com.nwalsh', name: 'sinclude', version: sincludeVersion ],
+    [group: 'org.slf4j', name: 'slf4j-simple', version: slf4jVersion ],
+  )
+}
+
+def getenv(String name) {
+  if (System.getenv(name) == null) {
+    return ""
+  } else {
+    return System.getenv(name)
+  }
+}
+
+println("Building with Java version ${System.getProperty('java.version')}")
+if (getenv('CIWORKFLOW') != '') {
+  println("Building for CI commit ${getenv('CI_SHA1')}");
+  println("Building for CI branch ${getenv('CI_BRANCH')}");
+} else {
+  println("Building locally...")
+}
+
+defaultTasks 'publish'
+
+saxon.configure {
+  initializer 'com.nwalsh.xslt.Register'
+}
+
+task publish(
+  group: "publish",
+  dependsOn: ['xformSpec'],
+  description: "Publish the current specification") {
+}
+
+task specResources(
+  type: Copy
+) {
+  into "${buildDir}/website/css"
+  from "${projectDir}/src/css"
+}
+
+task xformSpec(
+  type: SaxonXsltTask,
+  dependsOn: ["specResources"]
+) {
+  inputs.dir "${projectDir}/src/specification"
+
+  input "${projectDir}/src/specification/pragmas.xml"
+  stylesheet "${projectDir}/tools/spec.xsl"
+  output "${buildDir}/website/specification/index.html"
+}
