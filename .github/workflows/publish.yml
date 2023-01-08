@@ -63,10 +63,10 @@ jobs:
 
       - name: Update the website
         run: |
-          mkdir -p gh-pages/specification
-          rsync -var --delete build/website/specification gh-pages/specification
+          mkdir -p gh-pages/specification/
+          rsync -var --delete build/website/specification/ gh-pages/specification/
           mkdir -p gh-pages/css
-          rsync -var build/website/css gh-pages/css
+          rsync -var build/website/css/ gh-pages/css/
           ls -l
 
       - name: Deploy main to gyfre.org
