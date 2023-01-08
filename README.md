@@ -1,3 +1,4 @@
 # gyfre.org
 
-This is the future home of vendor-neutral specifications of pragmas for Invisible XML.
+This is the `gh-pages` branch. It is mostly generated automatically to
+build the website.
