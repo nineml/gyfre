@@ -88,7 +88,7 @@ saxon.configure {
 
 task publish(
   group: "publish",
-  dependsOn: ['xformSpec'],
+  dependsOn: ['xformSpec', 'htmlSources'],
   description: "Publish the current specification") {
 }
 
@@ -97,6 +97,14 @@ task specResources(
 ) {
   into "${buildDir}/website/css"
   from "${projectDir}/src/css"
+}
+
+task htmlSources(
+  type: Copy
+) {
+  into "${buildDir}/website"
+  from "${projectDir}/src"
+  include "*.html"
 }
 
 task xformSpec(
